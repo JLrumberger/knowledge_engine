@@ -21,6 +21,14 @@ def handle_upload(file_input, title, authors, year):
     upload_file_to_s3(file_input, metadata)
     return None
 
+def refresh_publications():
+    df = get_s3_metadata()
+    # Shorten long titles and authors and add '...' at the end when shortened
+    max_length = 60
+    df['title'] = df['title'].apply(lambda x: x if len(x) <= max_length else x[:max_length] + '...')
+    df['authors'] = df['authors'].apply(lambda x: x if len(x) <= max_length else x[:max_length] + '...')
+    return df
+
 with gr.Blocks() as demo:
     with gr.Tab("Chat"):
         chatbot = gr.Chatbot()
@@ -64,11 +72,23 @@ with gr.Blocks() as demo:
                 # Right 20% for file upload
                 with gr.Column(scale=20):
                     file_input = gr.File(label="Upload PDF", file_types=[".pdf"])
-        # metadata = {
-        #     'title': title_input,'authors': authors_input, 'year': year_input
-        # }
+        
+        def add_publication(file_input, title_input, authors_input, year_input):
+            handle_upload(file_input, title_input, authors_input, year_input)
+            # Clear the input fields
+            return gr.update(value=refresh_publications())
+        
+        def clear_inputs():
+            return [None, "", "", None]  # Clear file_input, title_input, authors_input, year_input
         
         # when add_button is clicked and file is uploaded, upload file to S3
-        add_button.click(handle_upload, [file_input, title_input, authors_input, year_input], []) # add_button.click(upload_file_to_s3, [file_input, metadata], [file_input, metadata])
-
+        add_button.click(
+            add_publication, 
+            [file_input, title_input, authors_input, year_input], 
+            [publications_list]
+        ).then(
+            clear_inputs,  # This function will be called after add_publication
+            outputs=[file_input, title_input, authors_input, year_input]
+        )
+                
 demo.launch()

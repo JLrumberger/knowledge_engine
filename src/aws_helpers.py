@@ -48,7 +48,7 @@ def upload_file_to_s3(
         logger.info(
             f"File {file_path} uploaded successfully to {bucket_name}/{object_name} with metadata"
         )
-        resync_bedrock_knowledge_base()
+        resync_bedrock_knowledge_base(wait_for_completion=True)
     except Exception as e:
         logger.info(f"Error uploading file: {e}")
 
