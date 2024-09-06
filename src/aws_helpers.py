@@ -31,9 +31,11 @@ def upload_file_to_s3(
     if object_name is None:
         object_name = file_path.split('/')[-1]
     
-    # Ensure metadata is a dictionary
+    # Ensure metadata is a dictionary and contains only strings 
     if metadata is None:
         metadata = {}
+    else:
+        metadata = {key: str(value) for key, value in metadata.items()}
     
     # Prepare the ExtraArgs parameter
     extra_args = {
