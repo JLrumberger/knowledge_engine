@@ -12,6 +12,14 @@ def chat(message, history):
     history.append((message, bot_message))
     return "", history
 
+def handle_upload(file_input, title, authors, year):
+    metadata = {
+        'title': title,
+        'authors': authors,
+        'year': year
+    }
+    upload_file_to_s3(file_input, metadata)
+    return None
 
 with gr.Blocks() as demo:
     with gr.Tab("Chat"):
@@ -56,10 +64,11 @@ with gr.Blocks() as demo:
                 # Right 20% for file upload
                 with gr.Column(scale=20):
                     file_input = gr.File(label="Upload PDF", file_types=[".pdf"])
-        metadata = {
-            'title': title_input,'authors': authors_input, 'year': year_input
-        }
+        # metadata = {
+        #     'title': title_input,'authors': authors_input, 'year': year_input
+        # }
+        
         # when add_button is clicked and file is uploaded, upload file to S3
-        #add_button.click(upload_file_to_s3, [file_input, metadata], [file_input, metadata])
+        add_button.click(handle_upload, [file_input, title_input, authors_input, year_input], []) # add_button.click(upload_file_to_s3, [file_input, metadata], [file_input, metadata])
 
 demo.launch()
