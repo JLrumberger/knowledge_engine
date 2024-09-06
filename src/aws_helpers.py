@@ -13,19 +13,19 @@ logger = logging.getLogger(__name__)
 
 
 def upload_file_to_s3(
-        file_path, bucket_name='664418962820-team-air-1', object_name=None, metadata=None
+        file_path, metadata, bucket_name='664418962820-team-air-1', object_name=None,
     ):
     """Upload a file to an S3 bucket with metadata
     Args:
         file_path (str): Local path of the file to upload
-        bucket_name (str): Name of the bucket to upload to
-        object_name (str): S3 object name. If not specified then file_name is used
         metadata (dict): Metadata to be stored with the file
             {
                 'title': 'Dropout as a bayesian approximation',
                 'authors': 'Gal, Yarin and Ghahramani, Zoubin',
-                'year': '2016',
+                'year': 2016,
             }
+        bucket_name (str): Name of the bucket to upload to
+        object_name (str): S3 object name. If not specified then file_name is used
     """
     s3 = boto3.client('s3')
     if object_name is None:
@@ -46,6 +46,7 @@ def upload_file_to_s3(
         logger.info(
             f"File {file_path} uploaded successfully to {bucket_name}/{object_name} with metadata"
         )
+        resync_bedrock_knowledge_base()
     except Exception as e:
         logger.info(f"Error uploading file: {e}")
 
@@ -79,7 +80,7 @@ def get_s3_metadata(bucket_name='664418962820-team-air-1'):
                 }
                 metadata_list.append(metadata)
 
-    except ClientError as e:
+    except Exception as e:
         logger.info(f"Error: {e}")
         return None
 
