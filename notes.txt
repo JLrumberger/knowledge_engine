@@ -1,0 +1,27 @@
+Team Air
+Level 1: Basic RAG
+- Setup Knowledge Base with 5 papers
+- Create an index database
+- test the chatbot using a large language model
+
+Level 2: Custom UI
+- Build a custom interface
+- Optimize parameters to get better results
+- Expand Literature collection (thousands of papers)
+
+Level 3: Enhanced Agent
+- Be creative and provide custom instructions for a supportive agent,
+e.g. personal tutor, text creation=)
+- So add modes to the LLM class that uses different system prompts?
+
+S3 Bucket for data
+Amazon Bedrock for ML API
+
+
+Set the team name air on everything you create
+1. Set up storage for your papers with S3
+2. Build knowledge base in bedrock
+3. Use AWS OpenSearch service to create an index database
+4. Probably use cohere embedding model and claude 3.5 sonnet as the text model
+5. Push website to another s3 instance and use AWS cloud front
+6. Use AWS Lambda to run the chatbot
