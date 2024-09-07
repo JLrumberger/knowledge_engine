@@ -4,7 +4,7 @@ from langchain_aws import AmazonKnowledgeBasesRetriever
 
 class RagBot:
     def __init__(self, knowledge_base_id, system_prompt="Pretend you're a helpful, talking cat. Meow!"):
-        self.bot = LlmBot(system_prompt=system_prompt,
+        self.llm = LlmBot(system_prompt=system_prompt,
                           model_id="anthropic.claude-3-sonnet-20240229-v1:0")
         self.retriever = RagRetriever(
             knowledge_base_id=knowledge_base_id,
@@ -29,14 +29,16 @@ class RagBot:
 
     def answer_question(self, question):
         context = self.get_context(question)
-        prompt = f"""Answer the question based on the context papers provided. Whenever you have an answer based on the context, add title and year of that context paper. Always adhere to the system prompt.
+        prompt = f"""Answer the question based on the context paper chunks provided. 
+        Whenever you have an answer based on such a chunk, reference the context paper by title and year (at the beginning of each paper chunk). Don't reference anything else.  
+        Also, adhere to the system prompt, which is: {self.llm.system_prompt}.
 
         Context: {context}
 
         Question: {question}
         """
         
-        return self.bot.chat(prompt)
+        return self.llm.chat(prompt)
 
     def chat(self, message):
         return self.answer_question(message)
