@@ -6,19 +6,15 @@ from tempfile import NamedTemporaryFile
 from llm import LlmBot
 from rag_bot import RagBot
 import time
-
-# PLACEHOLDER FOR THE API KEYS
-import os
-# os.environ['AWS_ACCESS_KEY_ID'] = ''
-# os.environ['AWS_SECRET_ACCESS_KEY'] = ''
-os.environ['AWS_DEFAULT_REGION'] = 'eu-central-1'
-# os.environ['AWS_SESSION_TOKEN'] = ''
-# Initialize the LlmBot with the cat persona
-# bot = LlmBot(system_prompt="Pretend you're a helpful, talking cat. Meow!")
+from dotenv import load_dotenv
+load_dotenv()
 
 
 # Initialize the LlmBot with the cat persona
-bot = RagBot(knowledge_base_id="4FYUGYITNF", system_prompt="Pretend you're a helpful, talking cat. Meow!")
+bot = RagBot(
+    knowledge_base_id=os.environ.get('KNOWLEDGE_BASE_ID'),
+    system_prompt="Pretend you're a helpful, talking cat. Meow!"
+)
 
 
 def chat(message, history):
@@ -158,5 +154,9 @@ with gr.Blocks(fill_width=True) as demo:
 
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=2233, debug=True)
+    demo.launch(
+        server_name=os.environ.get('SERVER_IP'),
+        server_port=int(os.environ.get('SERVER_PORT')),
+        debug=True
+    )
 

@@ -1,7 +1,14 @@
 from langchain_aws import AmazonKnowledgeBasesRetriever
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 
 class RagRetriever:
-    def __init__(self, knowledge_base_id, num_results=4, start_year=1800, end_year=2100):
+    def __init__(
+            self, knowledge_base_id, num_results=int(os.environ.get('RAG_NUMBER_OF_RESULTS')),
+            start_year=1800, end_year=2100
+        ):
         self.knowledge_base_id = knowledge_base_id
         self.num_results = num_results
         self.start_year = start_year
@@ -47,7 +54,7 @@ class RagRetriever:
 
 if __name__ == "__main__":
     # Initialize the RagRetriever
-    rag_retriever = RagRetriever(knowledge_base_id="4FYUGYITNF", num_results=1)
+    rag_retriever = RagRetriever(knowledge_base_id=os.environ.get('4FYUGYITNF'), num_results=1)
 
     # Use invoke method
     result = rag_retriever.invoke("What did Hinton mean by dropout?")

@@ -6,3 +6,4 @@ langchain-openai
 langchain_aws
 pypdf
 boto3
+python-dotenv
