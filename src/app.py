@@ -3,24 +3,38 @@ import pandas as pd
 import os
 from aws_helpers import upload_file_to_s3, get_s3_metadata, resync_bedrock_knowledge_base
 from tempfile import NamedTemporaryFile
+from llm import LlmBot
+from rag_bot import RagBot
 
 # PLACEHOLDER FOR THE API KEYS
+import os
+os.environ['AWS_ACCESS_KEY_ID'] = ''
+os.environ['AWS_SECRET_ACCESS_KEY'] = ''
+os.environ['AWS_DEFAULT_REGION'] = 'eu-central-1'
+os.environ['AWS_SESSION_TOKEN'] = ''
+# Initialize the LlmBot with the cat persona
+# bot = LlmBot(system_prompt="Pretend you're a helpful, talking cat. Meow!")
 
+bot = RagBot(knowledge_base_id="4FYUGYITNF", system_prompt="Pretend you're a helpful, talking cat. Meow!")
 def chat(message, history):
-    # Placeholder for actual chatbot logic
-    bot_message = f"You said: {message}"
-    history.append((message, bot_message))
+    bot_response = bot.chat(message)
+    history.append((message, bot_response))
     return "", history
-
 
 with gr.Blocks() as demo:
     with gr.Tab("Chat"):
         chatbot = gr.Chatbot()
-        msg = gr.Textbox(lines=3)
+        msg = gr.Textbox(lines=1, label="Message")
+        submit = gr.Button("Submit")
         clear = gr.Button("Clear")
 
-        msg.submit(chat, [msg, chatbot], [msg, chatbot])
+        def on_submit(message, history):
+            return chat(message, history)
+
+        submit.click(on_submit, inputs=[msg, chatbot], outputs=[msg, chatbot])
+        msg.submit(on_submit, inputs=[msg, chatbot], outputs=[msg, chatbot])
         clear.click(lambda: None, None, chatbot, queue=False)
+
 
     with gr.Tab("Publications"):
         with gr.Column():
@@ -62,4 +76,5 @@ with gr.Blocks() as demo:
         # when add_button is clicked and file is uploaded, upload file to S3
         #add_button.click(upload_file_to_s3, [file_input, metadata], [file_input, metadata])
 
-demo.launch()
+if __name__ == "__main__":
+    demo.launch(server_name="0.0.0.0", server_port=2233)
