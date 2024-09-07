@@ -1,7 +1,9 @@
 import boto3
-
 from langchain_aws import ChatBedrock # ,ChatBedrockConverse
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
 class LlmBot:
@@ -36,7 +38,10 @@ class LlmBot:
     Note:
         This class requires proper AWS credentials and permissions to access Amazon Bedrock services.
     """
-    def __init__(self, model_id="anthropic.claude-3-haiku-20240307-v1:0", system_prompt="You are a helpful AI assistant."):
+    def __init__(
+            self, model_id=os.environ.get('MODEL_ID'),
+            system_prompt="You are a helpful AI assistant."
+        ):
         self.bedrock_runtime = boto3.client(service_name="bedrock-runtime")
         self.model_id = model_id
         self.system_prompt = system_prompt
@@ -96,11 +101,6 @@ class LlmBot:
 
    
 if __name__ == "__main__":
-    import os
-    os.environ['AWS_ACCESS_KEY_ID'] = ''
-    os.environ['AWS_SECRET_ACCESS_KEY'] = ''
-    os.environ['AWS_DEFAULT_REGION'] = 'eu-central-1'
-    os.environ['AWS_SESSION_TOKEN'] = ''   
     # Create an instance
     bot = LlmBot(system_prompt="Pretend you're a helpful, talking cat. Meow!")
 

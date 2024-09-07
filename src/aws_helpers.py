@@ -3,6 +3,9 @@ import pandas as pd
 import time
 import logging
 import json
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
 logging.basicConfig(
@@ -13,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def upload_file_to_s3(
-        file_path, metadata, bucket_name='664418962820-team-air-1', object_name=None,
+        file_path, metadata, bucket_name=os.environ.get('BUCKET_NAME'), object_name=None,
     ):
     """Upload a file to an S3 bucket with metadata
     Args:
@@ -23,13 +26,14 @@ def upload_file_to_s3(
                 'title': 'Dropout as a bayesian approximation',
                 'authors': 'Gal, Yarin and Ghahramani, Zoubin',
                 'year': 2016,
+                'topic': 'Machine Learning
             }
         bucket_name (str): Name of the bucket to upload to
         object_name (str): S3 object name. If not specified then file_name is used
     """
     s3 = boto3.client('s3')
     if object_name is None:
-        object_name = file_path.split('/')[-1]
+        object_name = os.path.basename(file_path)
     
     # Ensure metadata is a dictionary
     if metadata is None:
@@ -46,12 +50,23 @@ def upload_file_to_s3(
         logger.info(
             f"File {file_path} uploaded successfully to {bucket_name}/{object_name} with metadata"
         )
-        resync_bedrock_knowledge_base()
     except Exception as e:
         logger.info(f"Error uploading file: {e}")
+    # upload metadata file to s3
+    metadata_file = {
+    "metadataAttributes": {
+        "name": metadata["title"],
+        "year": metadata["year"], 
+        "type": metadata["topic"],
+        }
+    }
+    # turn metadata file into json
+    metadata_file = json.dumps(metadata_file)
+    # upload metadata file to s3
+    s3.put_object(Bucket=bucket_name, Key=f"{object_name}.metadata.json", Body=metadata_file)
 
 
-def get_s3_metadata(bucket_name='664418962820-team-air-1'):
+def get_s3_metadata(bucket_name=os.environ.get('BUCKET_NAME')):
     """Get metadata for all objects in an S3 bucket
     Args:
         bucket_name (str): Name of the bucket to list objects from
@@ -91,7 +106,8 @@ def get_s3_metadata(bucket_name='664418962820-team-air-1'):
 
 
 def resync_bedrock_knowledge_base(
-        knowledge_base_id='4FYUGYITNF', data_source_id='PIKXJTPZTB', wait_for_completion=False
+        knowledge_base_id=os.environ.get('KNOWLEDGE_BASE_ID'),
+        data_source_id=os.environ.get('DATA_SOURCE_ID'), wait_for_completion=False
     ):
     """Re-sync a Bedrock knowledge base with an S3 bucket
     Args:
@@ -99,7 +115,7 @@ def resync_bedrock_knowledge_base(
         data_source_id (str): ID of the data source to re-sync
         wait_for_completion (bool): Whether to wait for the re-sync job to complete
     """
-    bedrock = boto3.client('bedrock-agent', region_name='eu-central-1')
+    bedrock = boto3.client('bedrock-agent', region_name=os.environ.get('AWS_DEFAULT_REGION'))
     try:
         # Start a new ingestion job
         response = bedrock.start_ingestion_job(
@@ -148,7 +164,7 @@ def invoke_agent_helper(
         str: Response from the agent
     """
     bedrock_agent_runtime_client = boto3.client(
-        'bedrock-agent-runtime', region_name='eu-central-1'
+        'bedrock-agent-runtime', region_name=os.environ.get('AWS_DEFAULT_REGION')
     )
     end_session: bool = False
     if not session_state:

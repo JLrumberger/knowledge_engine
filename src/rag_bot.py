@@ -1,14 +1,20 @@
 from llm import LlmBot
 from rag_retriever import RagRetriever
+import os
 from langchain_aws import AmazonKnowledgeBasesRetriever
+from dotenv import load_dotenv
+load_dotenv()
+
 
 class RagBot:
-    def __init__(self, knowledge_base_id, system_prompt="Pretend you're a helpful, talking cat. Meow!"):
-        self.llm = LlmBot(system_prompt=system_prompt,
-                          model_id="anthropic.claude-3-sonnet-20240229-v1:0")
+    def __init__(
+            self, knowledge_base_id, system_prompt="Pretend you're a helpful, talking cat. Meow!"
+        ):
+        self.bot = LlmBot(system_prompt=system_prompt,
+                          model_id=os.environ.get('MODEL_ID'))
         self.retriever = RagRetriever(
             knowledge_base_id=knowledge_base_id,
-            num_results=4,
+            num_results=int(os.environ.get('RAG_NUMBER_OF_RESULTS')),
             start_year=2010,
             end_year=2100
         )
@@ -45,12 +51,7 @@ class RagBot:
 
 # Example usage
 if __name__ == "__main__":
-    import os
-    # os.environ['AWS_ACCESS_KEY_ID'] = ''
-    # os.environ['AWS_SECRET_ACCESS_KEY'] = ''
-    os.environ['AWS_DEFAULT_REGION'] = 'eu-central-1'
-    # os.environ['AWS_SESSION_TOKEN'] = ''    
-    rag_bot = RagBot(knowledge_base_id="4FYUGYITNF")
+    rag_bot = RagBot(knowledge_base_id=os.environ.get('KNOWLEDGE_BASE_ID'))
     question = "What did Hinton mean by genetic reproduction?"
     answer = rag_bot.chat(question)
     print(f"Question: {question}")
