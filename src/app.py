@@ -63,7 +63,7 @@ def upload_file(file_obj, authors, title, year, topic, current_df):
         return current_df, authors, title, year, topic, file_obj, gr.Button("Submit")
 
 
-def format_metadata(df, max_length=70):
+def format_metadata(df, max_length=50):
     """Format metadata for display in the Gradio Dataframe
     Args:
         df (pd.DataFrame): DataFrame containing metadata
@@ -125,7 +125,7 @@ def update_selected(n, academic, educator, fun_mode, custom, custom_prompt_text)
     return [gr.update(variant="primary" if i == n else "secondary") for i in buttons] + [gr.update(visible=custom_prompt_visible)]
 
 
-with gr.Blocks() as demo:
+with gr.Blocks(fill_width=True) as demo:
     with gr.Row():
         # Left column for behavior selection
         with gr.Column(scale=1):
@@ -172,7 +172,7 @@ with gr.Blocks() as demo:
 
             with gr.Tab("Publications"):
                 with gr.Column():
-                    with gr.Row(70,variant="compact"):
+                    with gr.Row(70):
                         df = get_s3_metadata()
                         # shorten long titles and authors and add ... at the end when shortened
                         df = format_metadata(df)
@@ -185,11 +185,12 @@ with gr.Blocks() as demo:
                             interactive=False,
                             row_count=8,
                             line_breaks=False,
-                            column_widths=[22, 22, 5],
+                            column_widths=[20, 20, 3],
+                            height=300
                         )
                     with gr.Row(30, variant="compact"):
                         # Left 80% for text inputs
-                        with gr.Column(scale=70, variant="compact"):
+                        with gr.Column(scale=70):
                             authors_input = gr.Textbox(label="Authors")
                             title_input = gr.Textbox(label="Title")
                             file_input = gr.File(label="Upload PDF", file_types=[".pdf"])
