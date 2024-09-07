@@ -16,6 +16,10 @@ bot = RagBot(
     system_prompt="Pretend you're a helpful, talking cat. Meow!"
 )
 
+def on_submit(message, history):
+    return chat(message, history)
+
+
 def upload_file(file_obj, authors, title, year, topic, current_df):
     """Upload a file to S3 and resync the Bedrock knowledge base
     Args:
@@ -88,6 +92,39 @@ def chat(message, history):
     history.append((message, bot_response))
     return "", history
 
+def update_selected(n, academic, educator, fun_mode, custom, custom_prompt_text):
+    """Update the selected behavior and system prompt
+    Args:
+        n (int): Selected behavior
+        academic (Button): Academic behavior button
+        educator (Button): Educator behavior button
+        fun_mode (Button): Fun mode behavior button
+        custom (Button): Custom behavior button
+        custom_prompt_text (str): Custom system prompt text    
+    Returns:
+        list[Button]: Updated behavior buttons
+        Textbox: Custom system prompt textbox
+    """
+
+    buttons = [academic, educator, fun_mode, custom]
+    if n == academic:
+        prompt = "You're a helpful academic who answers questions based on the context provided."
+        custom_prompt_visible = False
+    elif n == educator:
+        prompt = "You're a helpful educator who explains concepts clearly and patiently."
+        custom_prompt_visible = False
+    elif n == fun_mode:
+        prompt = "Pretend you're a helpful, talking cat. Meow!"
+        custom_prompt_visible = False
+    else:  # custom
+        prompt = custom_prompt_text if custom_prompt_text else "Enter your custom prompt above."
+        custom_prompt_visible = True
+    
+    bot.llm.change_system_prompt(prompt)
+
+    return [gr.update(variant="primary" if i == n else "secondary") for i in buttons] + [gr.update(visible=custom_prompt_visible)]
+
+
 with gr.Blocks() as demo:
     with gr.Row():
         # Left column for behavior selection
@@ -108,49 +145,30 @@ with gr.Blocks() as demo:
                 submit = gr.Button("Submit")
                 clear = gr.Button("Clear")
 
-    submit.click(on_submit, inputs=[msg, chatbot], outputs=[msg, chatbot])
-    msg.submit(on_submit, inputs=[msg, chatbot], outputs=[msg, chatbot])
-    clear.click(lambda: None, None, chatbot, queue=False)
+                submit.click(on_submit, inputs=[msg, chatbot], outputs=[msg, chatbot])
+                msg.submit(on_submit, inputs=[msg, chatbot], outputs=[msg, chatbot])
+                clear.click(lambda: None, None, chatbot, queue=False)
 
-    def update_selected(n, academic, educator, fun_mode, custom, custom_prompt_text):
-        buttons = [academic, educator, fun_mode, custom]
-        if n == academic:
-            prompt = "You're a helpful academic who answers questions based on the context provided."
-            custom_prompt_visible = False
-        elif n == educator:
-            prompt = "You're a helpful educator who explains concepts clearly and patiently."
-            custom_prompt_visible = False
-        elif n == fun_mode:
-            prompt = "Pretend you're a helpful, talking cat. Meow!"
-            custom_prompt_visible = False
-        else:  # custom
-            prompt = custom_prompt_text if custom_prompt_text else "Enter your custom prompt above."
-            custom_prompt_visible = True
-        
-        bot.llm.change_system_prompt(prompt)
-    
-        return [gr.update(variant="primary" if i == n else "secondary") for i in buttons] + [gr.update(visible=custom_prompt_visible)]
+                # Connect behavior selection buttons
+                academic_btn.click(update_selected, 
+                                inputs=[academic_btn, academic_btn, educator_btn, fun_mode_btn, custom_btn, custom_prompt],
+                                outputs=[academic_btn, educator_btn, fun_mode_btn, custom_btn, custom_prompt])
+                educator_btn.click(update_selected, 
+                                inputs=[educator_btn, academic_btn, educator_btn, fun_mode_btn, custom_btn, custom_prompt],
+                                outputs=[academic_btn, educator_btn, fun_mode_btn, custom_btn, custom_prompt])
+                fun_mode_btn.click(update_selected, 
+                                inputs=[fun_mode_btn, academic_btn, educator_btn, fun_mode_btn, custom_btn, custom_prompt],
+                                outputs=[academic_btn, educator_btn, fun_mode_btn, custom_btn, custom_prompt])
+                custom_btn.click(update_selected, 
+                                inputs=[custom_btn, academic_btn, educator_btn, fun_mode_btn, custom_btn, custom_prompt],
+                                outputs=[academic_btn, educator_btn, fun_mode_btn, custom_btn, custom_prompt])
 
-    # Connect behavior selection buttons
-    academic_btn.click(update_selected, 
-                       inputs=[academic_btn, academic_btn, educator_btn, fun_mode_btn, custom_btn, custom_prompt],
-                       outputs=[academic_btn, educator_btn, fun_mode_btn, custom_btn, custom_prompt])
-    educator_btn.click(update_selected, 
-                       inputs=[educator_btn, academic_btn, educator_btn, fun_mode_btn, custom_btn, custom_prompt],
-                       outputs=[academic_btn, educator_btn, fun_mode_btn, custom_btn, custom_prompt])
-    fun_mode_btn.click(update_selected, 
-                       inputs=[fun_mode_btn, academic_btn, educator_btn, fun_mode_btn, custom_btn, custom_prompt],
-                       outputs=[academic_btn, educator_btn, fun_mode_btn, custom_btn, custom_prompt])
-    custom_btn.click(update_selected, 
-                     inputs=[custom_btn, academic_btn, educator_btn, fun_mode_btn, custom_btn, custom_prompt],
-                     outputs=[academic_btn, educator_btn, fun_mode_btn, custom_btn, custom_prompt])
-
-    # Add event for custom prompt changes
-    custom_prompt.change(
-        lambda prompt: bot.llm.change_system_prompt(prompt),
-        inputs=[custom_prompt],
-        outputs=[]
-    )
+                # Add event for custom prompt changes
+                custom_prompt.change(
+                    lambda prompt: bot.llm.change_system_prompt(prompt),
+                    inputs=[custom_prompt],
+                    outputs=[]
+                )
 
             with gr.Tab("Publications"):
                 with gr.Column():
@@ -181,8 +199,6 @@ with gr.Blocks() as demo:
                             year_input = gr.Number(label="Year")
                             topic_input = gr.Textbox(label="Topic")
                             add_button = gr.Button("Add Publication")
-
-
 
                 add_button.click(
                     fn=upload_file, 

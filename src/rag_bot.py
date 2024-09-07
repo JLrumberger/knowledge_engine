@@ -10,7 +10,7 @@ class RagBot:
     def __init__(
             self, knowledge_base_id, system_prompt="Pretend you're a helpful, talking cat. Meow!"
         ):
-        self.bot = LlmBot(system_prompt=system_prompt,
+        self.llm = LlmBot(system_prompt=system_prompt,
                           model_id=os.environ.get('MODEL_ID'))
         self.retriever = RagRetriever(
             knowledge_base_id=knowledge_base_id,
