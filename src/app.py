@@ -1,7 +1,7 @@
 import gradio as gr
 import pandas as pd
 import os
-from aws_helpers import upload_file_to_s3, get_s3_metadata, resync_bedrock_knowledge_base
+from aws_helpers import upload_file_to_s3, get_s3_metadata, resync_bedrock_knowledge_base, extract_metadata_new_file
 from tempfile import NamedTemporaryFile
 from llm import LlmBot
 from rag_bot import RagBot
@@ -214,7 +214,9 @@ with gr.Blocks(fill_width=True) as demo:
                     fn=reset_button,
                     outputs=add_button
                 )
-
+            
+                new_metadata = extract_metadata_new_file('/home/vanessa/Downloads/masterthesis_vcangalovic.pdf') #example - to be deleted
+                print(new_metadata)
 
 if __name__ == "__main__":
     demo.launch(
