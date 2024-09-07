@@ -70,7 +70,7 @@ class LlmBot:
 
     def change_system_prompt(self, prompt):
         self.system_prompt = prompt
-        self.messages = [SystemMessage(content=self.system_prompt)]
+        self.messages[0] = SystemMessage(content=self.system_prompt)
         self.model_kwargs["system"] = prompt
         self._create_model()
 

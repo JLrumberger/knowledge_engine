@@ -8,7 +8,13 @@ from rag_bot import RagBot
 import time
 
 # PLACEHOLDER FOR THE API KEYS
+import os
+# os.environ['AWS_ACCESS_KEY_ID'] = ''
+# os.environ['AWS_SECRET_ACCESS_KEY'] = ''
 os.environ['AWS_DEFAULT_REGION'] = 'eu-central-1'
+# os.environ['AWS_SESSION_TOKEN'] = ''
+# Initialize the LlmBot with the cat persona
+# bot = LlmBot(system_prompt="Pretend you're a helpful, talking cat. Meow!")
 
 
 # Initialize the LlmBot with the cat persona
@@ -152,4 +158,5 @@ with gr.Blocks(fill_width=True) as demo:
 
 
 if __name__ == "__main__":
-    demo.launch()#server_name="0.0.0.0", server_port=2233)
+    demo.launch(server_name="0.0.0.0", server_port=2233, debug=True)
+
