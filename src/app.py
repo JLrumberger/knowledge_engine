@@ -8,10 +8,10 @@ from rag_bot import RagBot
 
 # PLACEHOLDER FOR THE API KEYS
 import os
-os.environ['AWS_ACCESS_KEY_ID'] = ''
-os.environ['AWS_SECRET_ACCESS_KEY'] = ''
+# os.environ['AWS_ACCESS_KEY_ID'] = ''
+# os.environ['AWS_SECRET_ACCESS_KEY'] = ''
 os.environ['AWS_DEFAULT_REGION'] = 'eu-central-1'
-os.environ['AWS_SESSION_TOKEN'] = ''
+# os.environ['AWS_SESSION_TOKEN'] = ''
 # Initialize the LlmBot with the cat persona
 # bot = LlmBot(system_prompt="Pretend you're a helpful, talking cat. Meow!")
 
@@ -77,4 +77,4 @@ with gr.Blocks() as demo:
         #add_button.click(upload_file_to_s3, [file_input, metadata], [file_input, metadata])
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=2233)
+    demo.launch(server_name="0.0.0.0", server_port=2233, debug=True)
