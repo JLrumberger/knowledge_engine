@@ -1,0 +1,8 @@
+openai
+langchain
+langchain_community
+langchain_chroma
+langchain-openai
+langchain_aws
+pypdf
+boto3
