@@ -3,6 +3,7 @@ import pandas as pd
 import time
 import logging
 import json
+import os
 
 
 logging.basicConfig(
@@ -23,13 +24,14 @@ def upload_file_to_s3(
                 'title': 'Dropout as a bayesian approximation',
                 'authors': 'Gal, Yarin and Ghahramani, Zoubin',
                 'year': 2016,
+                'topic': 'Machine Learning
             }
         bucket_name (str): Name of the bucket to upload to
         object_name (str): S3 object name. If not specified then file_name is used
     """
     s3 = boto3.client('s3')
     if object_name is None:
-        object_name = file_path.split('/')[-1]
+        object_name = os.path.basename(file_path)
     
     # Ensure metadata is a dictionary
     if metadata is None:
@@ -46,9 +48,20 @@ def upload_file_to_s3(
         logger.info(
             f"File {file_path} uploaded successfully to {bucket_name}/{object_name} with metadata"
         )
-        resync_bedrock_knowledge_base()
     except Exception as e:
         logger.info(f"Error uploading file: {e}")
+    # upload metadata file to s3
+    metadata_file = {
+    "metadataAttributes": {
+        "name": metadata["title"],
+        "year": metadata["year"], 
+        "type": metadata["topic"],
+        }
+    }
+    # turn metadata file into json
+    metadata_file = json.dumps(metadata_file)
+    # upload metadata file to s3
+    s3.put_object(Bucket=bucket_name, Key=f"{object_name}.metadata.json", Body=metadata_file)
 
 
 def get_s3_metadata(bucket_name='664418962820-team-air-1'):
