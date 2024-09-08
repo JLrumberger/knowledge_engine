@@ -18,7 +18,15 @@ def initialize_bot(text: str):
         "In addition, you can always respond in the same format:\n" \
         "Authors: [...] \n" \
         "Title: [...] \n" \
-        "The publication year [...]. The submission happened on [...] "
+        "The publication year [...]. The submission happened on [...] \n" \
+        "If there is neither publication year nor submission, reply with  \n" \
+        "The publication year is not provided [...] \n" \
+        "Then \n The submission year happened on [...]" \
+        "If none of the above applies, please state a guess year only if there is a clear and possible reference in the text" \
+        "(e.g., a footnote indicating the 31st Conference on Neural Information Processing Systems (NIPS 2017) or" \
+        "a time stamp from arxiv). Otherwise, if you specify that it appears to be only a" \
+        "recent publication, avoid providing the current or previous year."
+        
     bot = LlmBot(system_prompt=prompt)
     return bot, query
 

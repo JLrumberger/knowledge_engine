@@ -3,8 +3,8 @@ import pandas as pd
 import os
 from aws_helpers import upload_file_to_s3, get_s3_metadata, resync_bedrock_knowledge_base
 from metadata_extractor import extract_metadata_new_file
-from tempfile import NamedTemporaryFile
-from llm import LlmBot
+# from tempfile import NamedTemporaryFile
+# from llm import LlmBot
 from rag_bot import RagBot
 import time
 from dotenv import load_dotenv
@@ -20,7 +20,55 @@ bot = RagBot(
 def on_submit(message, history):
     return chat(message, history)
 
+def clear_specific_warning(value, warning):
+    if value:
+        return gr.Markdown(visible=False)
+    return warning
 
+def clear_warnings():
+    return gr.Markdown(visible=False), gr.Markdown(visible=False), gr.Markdown(visible=False)
+
+def update_metadata_input(file_obj, authors_warning, title_warning, year_warning):
+    """Extracts metadata from a PDF file and updates the corresponding input fields
+
+    Args:
+        file_obj (gr.File): File object `.pdf`
+        authors_warning  (gr.Markdown): Warning if authors metadata is missing
+        title_warning  (gr.Markdown): Warning if title metadata is missing
+        year_warning (gr.Markdown): Warning if year metadata is missing
+
+    Returns:
+    tuple : (str, str, int, gr.Markdown, gr.Markdown, gr.Markdown)
+        authors (str): Authors from the metadata. If not found, returns an empty string
+        title (str): Title from the metadata. If not found, returns an empty string
+        year (int): Year from the metadata. If not found, returns 0
+        authors_warning (gr.Markdown): Updated warning for missing authors
+        title_warning (gr.Markdown): Updated warning for missing title
+        year_warning (gr.Markdown): Updated warning for missing year
+    """
+    
+    if file_obj is not None and file_obj.name.lower().endswith('.pdf'):
+        automated_metadata = extract_metadata_new_file(file_obj)
+        authors = automated_metadata.get('authors', '')
+        title = automated_metadata.get('title', '')
+        year = automated_metadata.get('year', 0)
+        
+        print(automated_metadata)
+        
+        if authors is None:
+            authors = ''
+            authors_warning = gr.Markdown('<p style="color: red; font-size: 12px;">⚠️ Authors not found. Please fill in manually.</p>', visible=True)
+        
+        if title is None:
+            title = ''
+            title_warning = gr.Markdown('<p style="color: red; font-size: 12px;">⚠️ Title not found. Please fill in manually.</p>', visible=True)
+        
+        if year is None:
+            year = 0
+            year_warning = gr.Markdown('<p style="color: red; font-size: 12px;">⚠️ Year not found. Please fill in manually.</p>', visible=True)
+        
+        return authors, title, year, authors_warning, title_warning, year_warning
+    
 def upload_file(file_obj, authors, title, year, topic, current_df):
     """Upload a file to S3 and resync the Bedrock knowledge base
     Args:
@@ -44,6 +92,7 @@ def upload_file(file_obj, authors, title, year, topic, current_df):
         'year': str(year),
         'topic': topic
     }
+    
     try:
         upload_file_to_s3(file_path=file_obj.name, metadata=metadata)
         resync_bedrock_knowledge_base()
@@ -274,7 +323,42 @@ with gr.Blocks(fill_width=True) as demo:
                             year_input = gr.Number(label="Year")
                             topic_input = gr.Textbox(label="Topic")
                             add_button = gr.Button("Add Publication")
-
+                
+                authors_warning = gr.Markdown("", visible=False)
+                title_warning = gr.Markdown("", visible=False)
+                year_warning = gr.Markdown("", visible=False)
+                
+                # Add event listener for file upload
+                file_input.upload(
+                    fn=update_metadata_input,
+                    inputs=[file_input, authors_warning, title_warning, year_warning],
+                    outputs=[authors_input, title_input, year_input, authors_warning, title_warning, year_warning]
+                )
+                
+                # Add event listener for file removal
+                file_input.clear(
+                    fn=clear_warnings,
+                    inputs=[],
+                    outputs=[authors_warning, title_warning, year_warning]
+                )
+                
+                # Add event listeners for manual input
+                authors_input.change(
+                    fn=clear_specific_warning,
+                    inputs=[authors_input, authors_warning],
+                    outputs=[authors_warning]
+                )
+                title_input.change(
+                    fn=clear_specific_warning,
+                    inputs=[title_input, title_warning],
+                    outputs=[title_warning]
+                )
+                year_input.change(
+                    fn=clear_specific_warning,
+                    inputs=[year_input, year_warning],
+                    outputs=[year_warning]
+                )
+                
                 add_button.click(
                     fn=upload_file, 
                     inputs=[
@@ -288,6 +372,7 @@ with gr.Blocks(fill_width=True) as demo:
                     fn=reset_button,
                     outputs=add_button
                 )
+
                 
                 filter_by_topic.change(
                     fn=toggle_topic_filter, 
@@ -325,7 +410,8 @@ with gr.Blocks(fill_width=True) as demo:
                 topic_dropdown.change(
                     fn=handle_topic_filter,
                     inputs=[filter_by_topic, topic_dropdown]
-                )            
+               )
+
 
 if __name__ == "__main__":
     demo.launch(

@@ -3,9 +3,9 @@ import pandas as pd
 import logging
 import json
 import os
+import time
 from dotenv import load_dotenv
 load_dotenv()
-
 
 logging.basicConfig(
     format='[%(asctime)s] p%(process)s {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
