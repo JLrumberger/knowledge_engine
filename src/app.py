@@ -206,7 +206,8 @@ def change_filter_topic(topic):
 
 def handle_topic_filter(checked, topic):
     if checked:
-        topic = str(topic) if topic.strip() else None
+        if topic is not None:
+            topic = str(topic) if topic.strip() else None
         change_filter_topic(topic)
     else:
         change_filter_topic(None)
