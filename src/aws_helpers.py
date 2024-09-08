@@ -25,7 +25,7 @@ def upload_file_to_s3(
                 'title': 'Dropout as a bayesian approximation',
                 'authors': 'Gal, Yarin and Ghahramani, Zoubin',
                 'year': 2016,
-                'topic': 'Machine Learning
+                'topic': 'ML'
             }
         bucket_name (str): Name of the bucket to upload to
         object_name (str): S3 object name. If not specified then file_name is used
@@ -63,6 +63,7 @@ def upload_file_to_s3(
         "name": metadata["title"],
         "year": metadata["year"], 
         "type": metadata["topic"],
+        "authors": metadata["authors"],
         }
     }
     # turn metadata file into json
