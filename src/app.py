@@ -1,7 +1,8 @@
 import gradio as gr
 import pandas as pd
 import os
-from aws_helpers import upload_file_to_s3, get_s3_metadata, resync_bedrock_knowledge_base, extract_metadata_new_file
+from aws_helpers import upload_file_to_s3, get_s3_metadata, resync_bedrock_knowledge_base
+from metadata_extractor import extract_metadata_new_file
 from tempfile import NamedTemporaryFile
 from llm import LlmBot
 from rag_bot import RagBot
