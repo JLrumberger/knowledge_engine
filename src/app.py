@@ -410,7 +410,8 @@ with gr.Blocks(fill_width=True) as demo:
                 topic_dropdown.change(
                     fn=handle_topic_filter,
                     inputs=[filter_by_topic, topic_dropdown]
-                )
+               )
+
 
 if __name__ == "__main__":
     demo.launch(
