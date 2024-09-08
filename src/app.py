@@ -287,7 +287,6 @@ with gr.Blocks(fill_width=True) as demo:
                     fn=reset_button,
                     outputs=add_button
                 )
-
                 
                 filter_by_topic.change(
                     fn=toggle_topic_filter, 
@@ -325,7 +324,7 @@ with gr.Blocks(fill_width=True) as demo:
                 topic_dropdown.change(
                     fn=handle_topic_filter,
                     inputs=[filter_by_topic, topic_dropdown]
-                )
+                )            
 
 if __name__ == "__main__":
     demo.launch(
