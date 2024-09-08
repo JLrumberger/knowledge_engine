@@ -25,7 +25,10 @@ def initialize_bot(text: str):
         "If none of the above applies, please state a guess year only if there is a clear and possible reference in the text" \
         "(e.g., a footnote indicating the 31st Conference on Neural Information Processing Systems (NIPS 2017) or" \
         "a time stamp from arxiv). Otherwise, if you specify that it appears to be only a" \
-        "recent publication, avoid providing the current or previous year."
+        "recent publication, avoid providing the current or previous year \n" \
+        "Finally, infer from the context whether the paper belongs to the topic of Machine Learning or Biology" \
+        "completing the response as it follows: \n" \
+        "Topic: [ML or Biology in this format only!]"""
         
     bot = LlmBot(system_prompt=prompt)
     return bot, query
@@ -41,15 +44,7 @@ def preprocess_info(response: str):
     if authors_match:
         authors_raw = authors_match.group(1).replace("*", "").replace("\n", "").strip()
         authors_list = [author.strip() for author in re.split(r',\s*|\sand\s', authors_raw)]
-        reordered_authors = []
-        for author in authors_list:
-            name_parts = author.split()
-            if len(name_parts) > 1:
-                reordered_author = f"{name_parts[-1]}, {' '.join(name_parts[:-1])}"
-                reordered_authors.append(reordered_author)
-            else:
-                reordered_authors.append(author)
-        authors = ' and '.join(reordered_authors)
+        authors = ', '.join(authors_list)
     else:
         authors = None
 
@@ -69,6 +64,12 @@ def preprocess_info(response: str):
             if submission_match:
                 year = submission_match.group(1)
     
+    topic_match = re.search(r"Topic:\s*(\w+)", response)
+    if topic_match:
+        topic = topic_match.group(1)
+    else:
+        topic = None
+    
     # Fallback for title and year if not found
     if not title:
         title_quotes_match = re.search(r'["“](.*?)["”]', response)
@@ -86,17 +87,18 @@ def preprocess_info(response: str):
             year = max(year_fallback_match)
             print("Warning: Check PDF, year information could be wrong.")
 
-    return authors, title, year
+    return authors, title, year, topic
 
 def extract_metadata_new_file(paper_path: str):
     text = read_pdf(paper_path)
     bot, query = initialize_bot(text)
     response = bot.chat(query)
     print(response)
-    authors, title, year = preprocess_info(response)
+    authors, title, year, topic = preprocess_info(response)
     metadata = {
         'authors': authors,
         'title': title,
-        'year' : year
+        'year' : year,
+        'topic' : topic,
     }
     return metadata

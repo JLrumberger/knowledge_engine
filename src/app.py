@@ -28,7 +28,7 @@ def clear_specific_warning(value, warning):
 def clear_warnings():
     return gr.Markdown(visible=False), gr.Markdown(visible=False), gr.Markdown(visible=False)
 
-def update_metadata_input(file_obj, authors_warning, title_warning, year_warning):
+def update_metadata_input(file_obj, authors_warning, title_warning, year_warning, topic_warning):
     """Extracts metadata from a PDF file and updates the corresponding input fields
 
     Args:
@@ -52,6 +52,7 @@ def update_metadata_input(file_obj, authors_warning, title_warning, year_warning
         authors = automated_metadata.get('authors', '')
         title = automated_metadata.get('title', '')
         year = automated_metadata.get('year', 0)
+        topic = automated_metadata.get('topic', '')
         
         print(automated_metadata)
         
@@ -67,7 +68,11 @@ def update_metadata_input(file_obj, authors_warning, title_warning, year_warning
             year = 0
             year_warning = gr.Markdown('<p style="color: red; font-size: 12px;">⚠️ Year not found. Please fill in manually.</p>', visible=True)
         
-        return authors, title, year, authors_warning, title_warning, year_warning
+        if topic is None:
+            topic = ''
+            topic_warning = gr.Markdown('<p style="color: red; font-size: 12px;">⚠️ Non-deductible Topic. Please fill in manually.</p>', visible=True)
+            
+        return authors, title, year, topic, authors_warning, title_warning, year_warning, topic_warning
     
 def upload_file(file_obj, authors, title, year, topic, current_df):
     """Upload a file to S3 and resync the Bedrock knowledge base
@@ -327,19 +332,21 @@ with gr.Blocks(fill_width=True) as demo:
                 authors_warning = gr.Markdown("", visible=False)
                 title_warning = gr.Markdown("", visible=False)
                 year_warning = gr.Markdown("", visible=False)
+                topic_warning = gr.Markdown("", visible=False)
                 
                 # Add event listener for file upload
                 file_input.upload(
                     fn=update_metadata_input,
-                    inputs=[file_input, authors_warning, title_warning, year_warning],
-                    outputs=[authors_input, title_input, year_input, authors_warning, title_warning, year_warning]
+                    inputs=[file_input, authors_warning, title_warning, year_warning, topic_warning],
+                    outputs=[authors_input, title_input, year_input, topic_input, 
+                             authors_warning, title_warning, year_warning, topic_warning]
                 )
                 
                 # Add event listener for file removal
                 file_input.clear(
                     fn=clear_warnings,
                     inputs=[],
-                    outputs=[authors_warning, title_warning, year_warning]
+                    outputs=[authors_warning, title_warning, year_warning, topic_warning]
                 )
                 
                 # Add event listeners for manual input
@@ -357,6 +364,11 @@ with gr.Blocks(fill_width=True) as demo:
                     fn=clear_specific_warning,
                     inputs=[year_input, year_warning],
                     outputs=[year_warning]
+                )
+                topic_input.change(
+                    fn=clear_specific_warning,
+                    inputs=[topic_input, topic_warning],
+                    outputs=[topic_warning]
                 )
                 
                 add_button.click(
