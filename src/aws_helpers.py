@@ -1,6 +1,5 @@
 import boto3
 import pandas as pd
-import time
 import logging
 import json
 import os
