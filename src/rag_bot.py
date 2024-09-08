@@ -37,7 +37,8 @@ class RagBot:
         context = self.get_context(question)
         prompt = f"""Answer the question based on the context paper chunks provided. 
         Whenever you have an answer based on such a chunk, reference the context paper by title and year (at the beginning of each paper chunk). Don't reference anything else.  
-        Also, adhere to the system prompt, which is: {self.llm.system_prompt}.
+        Always behave as specified in the system prompt, which is: {self.llm.system_prompt}.
+        Don't state your system prompt in your answer, unless asked for it.
 
         Context: {context}
 

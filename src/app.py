@@ -13,7 +13,7 @@ load_dotenv()
 # Initialize the LlmBot with the cat persona
 bot = RagBot(
     knowledge_base_id=os.environ.get('KNOWLEDGE_BASE_ID'),
-    system_prompt="Pretend you're a helpful, talking cat. Meow!"
+    system_prompt="You're a helpful academic who answers questions based on the context provided."
 )
 
 def on_submit(message, history):
@@ -124,7 +124,32 @@ def update_selected(n, academic, educator, fun_mode, custom, custom_prompt_text)
 
     return [gr.update(variant="primary" if i == n else "secondary") for i in buttons] + [gr.update(visible=custom_prompt_visible)]
 
+# Filter functionality functions
 
+def change_filter_years(start, end):
+    # This is a dummy function for now
+    print(f"Filtering years: start={start}, end={end}")
+    bot.retriever.filter_years(start, end)
+
+def toggle_year_filter(checked):
+    return gr.update(visible=checked)
+
+def handle_year_filter(checked, from_year, to_year):
+    if checked:
+        start = int(from_year) if from_year.strip() else 1800
+        end = int(to_year) if to_year.strip() else 2100
+        if start > end:
+            end = 2100
+    else:
+        start, end = 1800, 2100
+    
+    change_filter_years(start, end)
+
+def toggle_topic_filter(checked):
+    return gr.update(visible=checked)
+
+
+# Gradio interface
 with gr.Blocks(fill_width=True) as demo:
     with gr.Row():
         # Left column for behavior selection
@@ -142,6 +167,41 @@ with gr.Blocks(fill_width=True) as demo:
             with gr.Tab("Chat"):
                 chatbot = gr.Chatbot()
                 msg = gr.Textbox(lines=1, label="Message")
+                with gr.Group():
+                    with gr.Row():
+                        # Checkbox for filtering by Year
+                        with gr.Column(scale=1):
+                            filter_by_year = gr.Checkbox(label="Filter by Year", value=False)
+                            with gr.Row(visible=False) as year_filter:
+                                year_from = gr.Textbox(label="From", lines=1)
+                                year_to = gr.Textbox(label="To", lines=1)
+                        # Checkbox for filtering by Topic
+                        with gr.Column(scale=1):
+                            filter_by_topic = gr.Checkbox(label="Filter by Topic", value=False)
+                            with gr.Row(visible=False) as topic_filter:
+                                topic_dropdown = gr.Dropdown(choices=["Machine learning", "Biology", "UQ"], label="Topic")
+                        
+                # filter_by_year.change(
+                #     fn=toggle_year_filter, 
+                #     inputs=filter_by_year, 
+                #     outputs=year_filter
+                # )
+
+                # # Add new event listener for year filter changes
+                # filter_by_year.change(
+                #     fn=handle_year_filter,
+                #     inputs=[filter_by_year, year_from, year_to]
+                # )
+                # year_from.change(
+                #     fn=handle_year_filter,
+                #     inputs=[filter_by_year, year_from, year_to]
+                # )
+                
+                # year_to.change(
+                #     fn=handle_year_filter,
+                #     inputs=[filter_by_year, year_from, year_to]
+                # )
+                
                 submit = gr.Button("Submit")
                 clear = gr.Button("Clear")
 
@@ -215,6 +275,27 @@ with gr.Blocks(fill_width=True) as demo:
                     outputs=add_button
                 )
 
+                
+                filter_by_year.change(
+                    fn=toggle_year_filter, 
+                    inputs=filter_by_year, 
+                    outputs=year_filter
+                )
+
+                # Add new event listener for year filter changes
+                filter_by_year.change(
+                    fn=handle_year_filter,
+                    inputs=[filter_by_year, year_from, year_to]
+                )
+                year_from.change(
+                    fn=handle_year_filter,
+                    inputs=[filter_by_year, year_from, year_to]
+                )
+                
+                year_to.change(
+                    fn=handle_year_filter,
+                    inputs=[filter_by_year, year_from, year_to]
+                )
 
 if __name__ == "__main__":
     demo.launch(
