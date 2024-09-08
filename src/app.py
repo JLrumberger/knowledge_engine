@@ -195,9 +195,21 @@ def handle_year_filter(checked, from_year, to_year):
     
     change_filter_years(start, end)
 
+
+# topic stuff
 def toggle_topic_filter(checked):
     return gr.update(visible=checked)
 
+def change_filter_topic(topic):
+    print(f"Filtering topic: {topic}")
+    bot.retriever.filter_topic(topic)
+
+def handle_topic_filter(checked, topic):
+    if checked:
+        topic = str(topic) if topic.strip() else None
+        change_filter_topic(topic)
+    else:
+        change_filter_topic(None)
 
 # Gradio interface
 with gr.Blocks(fill_width=True) as demo:
@@ -361,6 +373,12 @@ with gr.Blocks(fill_width=True) as demo:
                 )
 
                 
+                filter_by_topic.change(
+                    fn=toggle_topic_filter, 
+                    inputs=filter_by_topic, 
+                    outputs=topic_filter
+                )
+                
                 filter_by_year.change(
                     fn=toggle_year_filter, 
                     inputs=filter_by_year, 
@@ -381,6 +399,18 @@ with gr.Blocks(fill_width=True) as demo:
                     fn=handle_year_filter,
                     inputs=[filter_by_year, year_from, year_to]
                 )
+                
+                # add event listener for topic filter changes
+                filter_by_topic.change(
+                    fn=handle_topic_filter,
+                    inputs=[filter_by_topic, topic_dropdown]
+                )
+                
+                topic_dropdown.change(
+                    fn=handle_topic_filter,
+                    inputs=[filter_by_topic, topic_dropdown]
+                )
+
 if __name__ == "__main__":
     demo.launch(
         server_name=os.environ.get('SERVER_IP'),

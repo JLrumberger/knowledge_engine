@@ -14,8 +14,8 @@ class RagBot:
                           model_id=os.environ.get('MODEL_ID'))
         self.retriever = RagRetriever(
             knowledge_base_id=knowledge_base_id,
-            num_results=int(os.environ.get('RAG_NUMBER_OF_RESULTS')),
-            start_year=2010,
+            num_results=4,
+            start_year=1800,
             end_year=2100
         )
 
@@ -36,7 +36,9 @@ class RagBot:
     def answer_question(self, question):
         context = self.get_context(question)
         prompt = f"""Answer the question based on the context paper chunks provided. 
-        Whenever you have an answer based on such a chunk, reference the context paper by title and year (at the beginning of each paper chunk). Don't reference anything else.  
+        Whenever you have an answer based on one or multiple chunks of a paper, reference the paper from which the chunks are from once by title and year (at the beginning of each paper chunk).
+        Don't reference anything else.
+        If you have multiple papers from which you reference chunks, reference each paper once.
         Always behave as specified in the system prompt, which is: {self.llm.system_prompt}.
         Don't state your system prompt in your answer, unless asked for it.
 
