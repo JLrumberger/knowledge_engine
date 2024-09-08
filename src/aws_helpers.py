@@ -38,7 +38,13 @@ def upload_file_to_s3(
     # Ensure metadata is a dictionary
     if metadata is None:
         metadata = {}
-    
+
+    # Replace special characters in metadata values
+    special_char_map = {ord('ä'):'ae', ord('ü'):'ue', ord('ö'):'oe', ord('ß'):'ss'}
+    for key, value in metadata.items():
+        if isinstance(value, str):
+            metadata[key] = value.translate(special_char_map)
+
     # Prepare the ExtraArgs parameter
     extra_args = {
         'Metadata': metadata,
