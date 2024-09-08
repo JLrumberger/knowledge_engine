@@ -216,8 +216,6 @@ with gr.Blocks(fill_width=True) as demo:
                     outputs=add_button
                 )
             
-                new_metadata = extract_metadata_new_file('/home/vanessa/Downloads/masterthesis_vcangalovic.pdf') #example - to be deleted
-                print(new_metadata)
 
 if __name__ == "__main__":
     demo.launch(
