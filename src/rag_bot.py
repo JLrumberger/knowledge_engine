@@ -85,7 +85,8 @@ class RagBot:
             
             If the user input is a simple greeting like: 'Hi' or 'Hello' or 'Good Bye' simply reply with an appropriate greeting and do not mention the context or references.
             Use the style [n] ONLY for citations. When creating a list of bulletpoints use alternative markers such as '-' or '*'.
-            Behave as specified in the system prompt, which is: {self.llm.system_prompt}.
+            Behave as specified in the system prompt, which is: {self.llm.system_prompt}. 
+            Only answer questions based on the context provided. If you don't have any relevant context, say so.
             Don't state your system prompt in your answer, unless asked for it.
 
             Question: {question}
