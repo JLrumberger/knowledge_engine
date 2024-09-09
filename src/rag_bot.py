@@ -50,6 +50,9 @@ class RagBot:
 
             Example of proper citation and referencing:
             Question: What is the transformer architecture in natural language processing?
+            
+            Context: [Here, there will be data chunks from retrieved documents with relevant information about the transformer architecture. Each chunk will have a title, authors, year, and content. There can be multiple chunks from the same paper, in which case you only have one paper citation and use the same citation number.]
+            
             Assistant:
             The transformer architecture, introduced in 2017, is a groundbreaking model in natural language processing (NLP) that relies entirely on self-attention mechanisms, eliminating the need for recurrence and convolutions used in previous architectures [1]. This model has become the foundation for many state-of-the-art NLP systems due to its ability to process sequential data efficiently and capture long-range dependencies.
 
@@ -71,14 +74,16 @@ class RagBot:
 
             Example of answering a question that goes beyond the context: 
 
-            User: Where should I go for vacation?
+            Question: Where should I go for vacation?
+            
+            Context: [Here, there will again be retrieved documents, which are not relevant to vacation destinations, as the context consists of academic papers, mostly either ML or Biology related]
 
             Assistant: It seems that your question goes beyond the topics that my library covers. Therfore I can only give a general answer based on my training as a 
             large language model. For example at this time of the year many people enjoy going hiking in the mountains. Maybe you could tell me a little bit more 
             about your interests such that I can give more concrete advice. 
 
             If the user input is a simple greeting like: 'Hi' or 'Hello' or 'Good Bye' simply reply with an appropriate greeting and do not mention the context or references. 
-            Always behave as specified in the system prompt, which is: {self.llm.system_prompt}.
+            Also, behave as specified in the system prompt, which is: {self.llm.system_prompt}.
             Don't state your system prompt in your answer, unless asked for it.
 
             Question: {question}
