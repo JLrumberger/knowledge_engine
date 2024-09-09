@@ -14,7 +14,7 @@ load_dotenv()
 # Initialize the LlmBot with the cat persona
 bot = RagBot(
     knowledge_base_id=os.environ.get('KNOWLEDGE_BASE_ID'),
-    system_prompt="You're a helpful academic who answers questions based on the context provided."
+    system_prompt="You're a helpful academic."
 )
 
 def on_submit(message, history):
