@@ -217,8 +217,21 @@ def handle_topic_filter(checked, topic):
     else:
         change_filter_topic(None)
 
-# Gradio interface
-with gr.Blocks(fill_width=True) as demo:
+
+    # Modify the Gradio interface
+with gr.Blocks(
+    css="""
+    footer {display: none !important;}
+    #custom-footer {
+        text-align: center;
+        padding: 10px;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        font-size: 1.03em; /* Increase font size, but just a bit */
+    }
+    """,
+    fill_width=True) as demo:
     with gr.Row():
         # Left column for behavior selection
         with gr.Column(scale=1):
@@ -424,6 +437,14 @@ with gr.Blocks(fill_width=True) as demo:
                     inputs=[filter_by_topic, topic_dropdown]
                )
 
+    # Add custom footer
+    gr.HTML(
+        """
+        <div id="custom-footer">
+            Built with ❤️ by Claudia, Fabian, Lorenz, Moe & Vanessa
+        </div>
+        """
+    )
 
 if __name__ == "__main__":
     demo.launch(
